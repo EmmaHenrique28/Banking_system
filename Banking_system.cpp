@@ -37,16 +37,113 @@ void account::create_account()
     cin.ignore();
     cin.getline(name,50);
     cout<<"Enter your surname: ";
-    cin.ignore();
     cin.getline(surname,50);
     cout<<"Enter your age: ";
     cin>>age;
     cout<<"Enter type of the account (C/S)";
     cin>>type;
     type=toupper(type);
+
+     while (type != 'C' && type != 'S')
+    {
+        cout << "Invalid account type! Please enter 'C' or 'S': ";
+        cin >> type;
+        type = toupper(type);
+    }
+
     cout<<"Enter the initail amount(>=500 for Saving and >=200 for current) : ";
     cin>>deposit;
+
+     while (deposit < 0)
+    {
+        cout << "Invalid deposit amount! Please enter a non-negative value: ";
+        cin >> deposit;
+    }
+
     cout<<"Your account is successfully created..";
 }
 
 //function to show data on screen
+void account::show_account() const
+{
+    cout<<"Account Number: "<<acno<<endl;
+    cout<<"Account holder name: "<<name<<endl;
+    cout<<"Account holder surname: "<<surname<<endl;
+    cout<<"Your age: "<<age<<endl;
+    cout<<"Type of account: "<<type<<endl;
+    cout<<"Balance: "<<deposit<<endl;
+}
+
+//function to add new data
+void account::modify()
+{
+    cout<<"Account Number: "<<acno<<endl;
+	cout<<"Modify Account Holder Name : "<<endl;
+	cin.ignore();
+	cin.getline(name,50);
+    cout<<"Modify Account Holder Surname : "<<endl;
+	cin.getline(surname,50);
+    cout<<"Modify Age of Account holder: "<<endl;
+	cin>>age;
+	cout<<"Modify Type of Account : "<<endl;
+	cin>>type;
+	type=toupper(type);
+    while (type != 'C' && type != 'S')
+    {
+        cout << "Invalid account type! Please enter 'C' or 'S': ";
+        cin >> type;
+        type = toupper(type);
+    }
+
+    cout << "Do you want to modify the balance? (Y/N): ";
+    char choice;
+    cin >> choice;
+    if (toupper(choice) == 'Y')
+    {
+        cout << "Enter the new balance: ";
+        cin >> deposit;
+
+        while (deposit < 0)
+        {
+            cout << "Invalid deposit amount! Please enter a non-negative value: ";
+            cin >> deposit;
+        }
+    }
+}
+
+void account::dep(int x)
+{
+	deposit+=x;
+}
+	
+void account::draw(int x)
+{
+	deposit-=x;
+}
+	
+void account::report() const
+{
+  cout << setw(10) << left << acno << setw(20) << left << name
+         << setw(10) << left << surname << setw(5) << left << age
+         << setw(5) << left << type << setw(10) << left << deposit << endl;
+}
+
+	
+int account::retacno() const
+{
+	return acno;
+}
+
+int account::retdeposit() const
+{
+	return deposit;
+}
+
+char account::rettype() const
+{
+	return type;
+}
+
+
+
+
