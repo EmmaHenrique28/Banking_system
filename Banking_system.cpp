@@ -131,18 +131,91 @@ void account::report() const
 	
 int account::retacno() const
 {
-	return acno;
+    return acno;
 }
 
 int account::retdeposit() const
 {
-	return deposit;
+    return deposit;
 }
 
 char account::rettype() const
 {
-	return type;
+    return type;
 }
+
+//function declaration
+void write_account();  //function to write record in binary file
+void display_sp(int);  //function to display acc details given by user
+void modify_account(int); //function to modify record or file
+void delete_account(int); //function to delete record or file
+void display_all();  //function to display all accounts details
+void deposit_withdraw(int, int); //function to deposit/withdraw amount for given account
+void intro(); //introductory screen function
+
+//main fonction
+
+int main()
+{
+    char ch; //hold choice in switch case
+    int num; //
+    intro();
+    do
+    {
+        system("cls");
+		cout<<"\n\n\n\t MAIN MENU";
+		cout<<"\n\n\t 01. NEW ACCOUNT";
+		cout<<"\n\n\t 02. DEPOSIT AMOUNT";
+		cout<<"\n\n\t 03. WITHDRAW AMOUNT";
+		cout<<"\n\n\t 04. BALANCE ENQUIRY";
+		cout<<"\n\n\t 05. LIST OF ALL ACCOUNT HOLDERS";
+		cout<<"\n\n\t 06. CLOSE AN ACCOUNT";
+		cout<<"\n\n\t 07. MODIFY AN ACCOUNT";
+		cout<<"\n\n\t 08. EXIT";
+		cout<<"\n\n\t Enter Your Option (1-8): ";
+		cin>>ch;
+		system("cls");
+
+        switch (ch)
+        {
+        case '1':
+            write_account();
+            break;
+        case '2':
+			cout<<"\n\n\t Enter The account No. : "; cin>>num;
+			deposit_withdraw(num, 1);
+			break;
+		case '3':
+			cout<<"\n\n\t Enter The account No. : "; cin>>num;
+			deposit_withdraw(num, 2);
+			break;
+		case '4': 
+			cout<<"\n\n\t Enter The account No. : "; cin>>num;
+			display_sp(num);
+			break;
+		case '5':
+			display_all();
+			break;
+		case '6':
+			cout<<"\n\n\t Enter The account No. : "; cin>>num;
+			delete_account(num);
+			break;
+		 case '7':
+			cout<<"\n\n\tEnter The account No. : "; cin>>num;
+			modify_account(num);
+			break;
+		 case '8':
+			cout<<"\n\n\t Thanks for using bank managemnt system! ";
+			break;
+		 default:
+            cout << "\nInvalid option! Please enter a valid option between 11 and 8.\n";
+		}
+		cin.ignore();
+		cin.get();
+	}while(ch!='8');
+	return 0;
+}
+
 
 
 
