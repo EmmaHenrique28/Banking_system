@@ -2,6 +2,8 @@
 #include<fstream>
 #include<cctype>
 #include<iomanip>
+#include <limits>
+#include <stdexcept>  //  for runtime_error
 
 using namespace std;
 
@@ -13,7 +15,7 @@ using namespace std;
 class account
 {
 	int acno;
-	char name[50];
+	char name[20];
 	int deposit;
 	char type;
 public:
@@ -27,6 +29,43 @@ public:
 	int retdeposit() const;	//function to return balance amount
 	char rettype() const;	//function to return type of account
 };         //class ends here
+
+// Function to get valid integer input
+int getValidInputInt(const string& prompt, int minValue, int maxValue) {
+    int input;
+    while (true) {
+        cout << prompt;
+        cin >> input;
+
+        if (cin.fail() || input < minValue || input > maxValue) {
+            cin.clear();  // Clear the error flag
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Discard invalid input
+            cout << "Invalid input! Please enter a number between " << minValue << " and " << maxValue << ".\n";
+        } else {
+            break;  // Input is valid, exit the loop
+        }
+    }
+    return input;
+}
+
+// Function to get valid character input
+char getValidInputChar(const string& prompt, const string& validChars) {
+    char input;
+    while (true) {
+        cout << prompt;
+        cin >> input;
+
+        input = toupper(input);  // Convert to uppercase
+
+        if (validChars.find(input) == string::npos) {
+            cout << "Invalid input! Please enter one of the following characters: " << validChars << ".\n";
+        } else {
+            break;  // Input is valid, exit the loop
+        }
+    }
+    return input;
+}
+
 
 void account::create_account()
 {
@@ -79,7 +118,7 @@ void account::draw(int x)
 	
 void account::report() const
 {
-	cout<<acno<<setw(10)<<" "<<name<<setw(10)<<" "<<type<<setw(6)<<deposit<<endl;
+	cout<<acno<<setw(10)<<" "<<name<<setw(20)<<" "<<type<<setw(10)<<deposit<<(20)<<endl;
 }
 
 	
@@ -132,8 +171,19 @@ int main()
 		cout<<"\n\n\t06. CLOSE AN ACCOUNT";
 		cout<<"\n\n\t07. MODIFY AN ACCOUNT";
 		cout<<"\n\n\t08. EXIT";
-		cout<<"\n\n\tSelect Your Option (1-8) ";
+		cout<<"\n\n\tSelect Your Option (1-8) : ";
 		cin>>ch;
+		
+		int choice = ch - '0';  // Convert char to int
+
+        if (choice < 1 || choice > 8)
+        {
+            cout << "\nInvalid choice! Please enter a number between 1 and 8 and continue";
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin.get();
+            continue;
+        }
+		
 		system("cls");
 		switch(ch)
 		{
@@ -143,10 +193,14 @@ int main()
 		case '2':
 			cout<<"\n\n\tEnter The account No. : "; cin>>num;
 			deposit_withdraw(num, 1);
+			num = getValidInputInt("", 1, INT_MAX);
+            deposit_withdraw(num, 1);
 			break;
 		case '3':
 			cout<<"\n\n\tEnter The account No. : "; cin>>num;
 			deposit_withdraw(num, 2);
+			num = getValidInputInt("", 1, INT_MAX);
+            deposit_withdraw(num, 2);
 			break;
 		case '4': 
 			cout<<"\n\n\tEnter The account No. : "; cin>>num;
@@ -166,10 +220,11 @@ int main()
 		 case '8':
 			cout<<"\n\n\tThanks for using bank managemnt system ";
 			break;
-		 default :cout<<"\a";
+		 default :  cout << "\nInvalid option! Please enter a valid option (1-8).\n";
 		}
 		cin.ignore();
 		cin.get();
+		
 	}while(ch!='8');
 	return 0;
 }
@@ -181,12 +236,50 @@ int main()
 
 void write_account()
 {
-	account ac;
-	ofstream outFile;
-	outFile.open("account.dat",ios::binary|ios::app);
-	ac.create_account();
-	outFile.write(reinterpret_cast<char *> (&ac), sizeof(account));
-	outFile.close();
+    try
+    {
+        account ac;
+        ofstream outFile;
+        ifstream checkFile;
+        int acno;
+
+        checkFile.open("account.dat", ios::binary);
+        if (!checkFile)
+        {
+            throw runtime_error("Error opening the file for checking existing accounts.");
+        }
+
+        cout << "\nEnter The account No. :";
+        cin >> acno;
+
+        // Check if the account number already exists
+        while (checkFile.read(reinterpret_cast<char *>(&ac), sizeof(account)))
+        {
+            if (ac.retacno() == acno)
+            {
+                checkFile.close();
+                throw runtime_error("This account number already exists. Enter a new account number");
+            }
+        }
+        checkFile.close();
+
+        // Continue with the account creation if the account number is unique
+        outFile.open("account.dat", ios::binary | ios::app);
+
+        if (!outFile)
+        {
+            throw runtime_error("Error opening the file for writing.");
+        }
+
+        ac.create_account();
+        outFile.write(reinterpret_cast<char *>(&ac), sizeof(account));
+        outFile.close();
+        cout << "\n\n\tAccount Created and Saved to File";
+    }
+    catch (const exception &e)
+    {
+        cerr << "Error: " << e.what() << endl;
+    }
 }
 
 //***************************************************************
@@ -195,28 +288,36 @@ void write_account()
 
 void display_sp(int n)
 {
-	account ac;
-	bool flag=false;
-	ifstream inFile;
-	inFile.open("account.dat",ios::binary);
-	if(!inFile)
-	{
-		cout<<"File could not be open !! Press any Key...";
-		return;
-	}
-	cout<<"\nBALANCE DETAILS\n";
+    try
+    {
+        account ac;
+        bool flag = false;
+        ifstream inFile;
+        inFile.open("account.dat", ios::binary);
 
-    	while(inFile.read(reinterpret_cast<char *> (&ac), sizeof(account)))
-	{
-		if(ac.retacno()==n)
-		{
-			ac.show_account();
-			flag=true;
-		}
-	}
-	inFile.close();
-	if(flag==false)
-		cout<<"\n\nAccount number does not exist";
+        if (!inFile)
+        {
+            throw runtime_error("Error opening the file for reading.");
+        }
+
+        cout << "\nBALANCE DETAILS\n";
+
+        while (inFile.read(reinterpret_cast<char *>(&ac), sizeof(account)))
+        {
+            if (ac.retacno() == n)
+            {
+                ac.show_account();
+                flag = true;
+            }
+        }
+        inFile.close();
+        if (flag == false)
+            cout << "\n\nAccount number does not exist";
+    }
+    catch (const exception &e)
+    {
+        cerr << "Error: " << e.what() << endl;
+    }
 }
 
 
@@ -302,9 +403,9 @@ void display_all()
 		return;
 	}
 	cout<<"\n\n\t\tACCOUNT HOLDER LIST\n\n";
-	cout<<"====================================================\n";
-	cout<<"A/c no.      NAME           Type  Balance\n";
-	cout<<"====================================================\n";
+	cout<<"================================================================\n";
+	cout<<" A/c no.            NAME           Type            Balance\n";
+	cout<<"=================================================================\n";
 	while(inFile.read(reinterpret_cast<char *> (&ac), sizeof(account)))
 	{
 		ac.report();
@@ -375,9 +476,10 @@ void intro()
 	cout<<"\n\n\n\t  BANK";
 	cout<<"\n\n\tMANAGEMENT";
 	cout<<"\n\n\t  SYSTEM";
-	cout<<"\n\n\n\nMADE BY : your name: ";
+	cout<<"\n\n\n\nMADE BY";
+	cout<<"\n\n\n\n Enter your name: ";
 	cin.get();
-	cout<<"\n\nSCHOOL : your school name: ";
+	cout<<"\n\n Your school name: ";
 	cin.get();
 }
 
